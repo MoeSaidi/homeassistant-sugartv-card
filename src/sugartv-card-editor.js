@@ -86,6 +86,78 @@ class SugarTvCardEditor extends LitElement {
                     ></ha-switch>
                 </ha-formfield>
 
+                <div class="values">
+                    <h4>${localize('editor.thresholds')}</h4>
+                    <ha-textfield
+                        type="number"
+                        label="${localize('editor.high_warn')}"
+                        .value=${String((this.config.thresholds && this.config.thresholds.high_warn) ?? 11)}
+                        .configValue=${'thresholds.high_warn'}
+                        @input=${this._valueChanged}
+                    ></ha-textfield>
+                    <ha-textfield
+                        type="number"
+                        label="${localize('editor.high_crit')}"
+                        .value=${String((this.config.thresholds && this.config.thresholds.high_crit) ?? 18)}
+                        .configValue=${'thresholds.high_crit'}
+                        @input=${this._valueChanged}
+                    ></ha-textfield>
+                    <ha-textfield
+                        type="number"
+                        label="${localize('editor.low_warn')}"
+                        .value=${String((this.config.thresholds && this.config.thresholds.low_warn) ?? 4.9)}
+                        .configValue=${'thresholds.low_warn'}
+                        @input=${this._valueChanged}
+                    ></ha-textfield>
+                    <ha-textfield
+                        type="number"
+                        label="${localize('editor.low_crit')}"
+                        .value=${String((this.config.thresholds && this.config.thresholds.low_crit) ?? 3.0)}
+                        .configValue=${'thresholds.low_crit'}
+                        @input=${this._valueChanged}
+                    ></ha-textfield>
+                </div>
+
+                <div class="values">
+                    <h4>${localize('editor.colors')}</h4>
+                    <ha-textfield
+                        label="${localize('editor.normal_bg')}"
+                        .value=${(this.config.colors && this.config.colors.normal_bg) || ''}
+                        .configValue=${'colors.normal_bg'}
+                        @input=${this._valueChanged}
+                    ></ha-textfield>
+                    <ha-textfield
+                        label="${localize('editor.normal_text')}"
+                        .value=${(this.config.colors && this.config.colors.normal_text) || ''}
+                        .configValue=${'colors.normal_text'}
+                        @input=${this._valueChanged}
+                    ></ha-textfield>
+                    <ha-textfield
+                        label="${localize('editor.warn_bg')}"
+                        .value=${(this.config.colors && this.config.colors.warn_bg) || ''}
+                        .configValue=${'colors.warn_bg'}
+                        @input=${this._valueChanged}
+                    ></ha-textfield>
+                    <ha-textfield
+                        label="${localize('editor.warn_text')}"
+                        .value=${(this.config.colors && this.config.colors.warn_text) || ''}
+                        .configValue=${'colors.warn_text'}
+                        @input=${this._valueChanged}
+                    ></ha-textfield>
+                    <ha-textfield
+                        label="${localize('editor.crit_bg')}"
+                        .value=${(this.config.colors && this.config.colors.crit_bg) || ''}
+                        .configValue=${'colors.crit_bg'}
+                        @input=${this._valueChanged}
+                    ></ha-textfield>
+                    <ha-textfield
+                        label="${localize('editor.crit_text')}"
+                        .value=${(this.config.colors && this.config.colors.crit_text) || ''}
+                        .configValue=${'colors.crit_text'}
+                        @input=${this._valueChanged}
+                    ></ha-textfield>
+                </div>
+
                 <ha-select
                     naturalMenuWidth
                     fixedMenuPosition
@@ -110,13 +182,19 @@ class SugarTvCardEditor extends LitElement {
 
         const { target } = ev;
 
-        const newConfig = {
-            ...this.config,
-            [target.configValue]:
-                target.configValue === 'show_prediction'
-                    ? target.checked
-                    : target.value,
-        };
+        const path = (target.configValue || '').split('.');
+        const newConfig = { ...this.config };
+        if (path.length === 1) {
+            newConfig[path[0]] =
+                target.configValue === 'show_prediction' ? target.checked : target.value;
+        } else if (path.length === 2) {
+            const [group, key] = path;
+            newConfig[group] = { ...(this.config[group] || {}) };
+            const v = target.type === 'number' || target.inputMode === 'numeric'
+                ? Number(target.value)
+                : target.value;
+            newConfig[group][key] = v;
+        }
 
         fireEvent(this, 'config-changed', { config: newConfig });
     }

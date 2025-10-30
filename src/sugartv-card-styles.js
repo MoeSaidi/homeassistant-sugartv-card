@@ -9,6 +9,9 @@ export const cardStyles = css`
         height: 100%;
         width: 100%;
         container-type: inline-size;
+        /* Themeable surface + text color hooks */
+        background: var(--sugartv-background, var(--card-background-color));
+        color: var(--sugartv-text-color, var(--primary-text-color));
     }
 
     .wrapper {
@@ -43,6 +46,8 @@ export const cardStyles = css`
     .value {
         font-size: 20cqi;
         margin: 0 2.5cqi;
+        /* Allow overriding only the big value color */
+        color: var(--sugartv-value-color, inherit);
     }
 
     .trend {
@@ -57,6 +62,7 @@ export const cardStyles = css`
         --mdc-icon-size: 10cqi;
         width: 10cqi;
         height: 10cqi;
+        color: var(--sugartv-icon-color, currentColor);
     }
 
     .delta {
@@ -77,6 +83,7 @@ export const cardStyles = css`
         margin-top: 2cqi;
         opacity: 0.7;
         text-align: center;
+        color: var(--sugartv-prediction-color, currentColor);
     }
 `;
 

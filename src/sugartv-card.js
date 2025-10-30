@@ -26,6 +26,22 @@ class SugarTvCard extends LitElement {
             glucose_trend: 'sensor.dexcom_glucose_trend',
             show_prediction: true,
             unit_override: 'auto',
+            // Thresholds (interpreted in current display unit)
+            thresholds: {
+                high_warn: 11,
+                high_crit: 18,
+                low_warn: 4.9,
+                low_crit: 3.0,
+            },
+            // Optional colors
+            colors: {
+                normal_bg: undefined,
+                normal_text: undefined,
+                warn_bg: undefined,
+                warn_text: '#ffb300',
+                crit_bg: '#b71c1c',
+                crit_text: '#ffffff',
+            },
         };
     }
 
@@ -373,24 +389,27 @@ class SugarTvCard extends LitElement {
         const trendIcon = trendInfo.icon;
         const prediction = trendInfo.prediction || '';
 
+        // Apply dynamic theme variables based on thresholds
+        this._applyThemeFromThresholds();
+
         return html`
             <div class="wrapper">
                 <div class="container">
                     <div class="main-row">
-                        <div class="time">
+                        <div class="time" part="time">
                             ${this._formatTime(last_changed)}
                         </div>
-                        <div class="value">${this._formatValue(value)}</div>
-                        <div class="trend">
+                        <div class="value" part="value">${this._formatValue(value)}</div>
+                        <div class="trend" part="trend">
                             <ha-icon icon="${trendIcon}"></ha-icon>
                         </div>
-                        <div class="delta">
+                        <div class="delta" part="delta">
                             ${this._calculateDelta() ||
                             html`<ha-icon icon="mdi:progress-clock"></ha-icon>`}
                         </div>
                     </div>
                     ${showPrediction && prediction
-                        ? html` <div class="prediction">${prediction}</div> `
+                        ? html` <div class="prediction" part="prediction">${prediction}</div> `
                         : ''}
                 </div>
             </div>
@@ -403,6 +422,66 @@ class SugarTvCard extends LitElement {
 
     static get styles() {
         return cardStyles;
+    }
+
+    _applyThemeFromThresholds() {
+        const cfg = this.config || {};
+        const thresholds = (cfg.thresholds) || {};
+        const colors = (cfg.colors) || {};
+
+        const vRaw = this._data && this._data.value;
+        const v = parseFloat(String(vRaw).replace(',', '.'));
+        const isNumber = Number.isFinite(v);
+
+        const unit = this._data && this._data.unit;
+        // Thresholds are assumed to be in the current display unit
+        const hw = thresholds.high_warn ?? 11;
+        const hc = thresholds.high_crit ?? 18;
+        const lw = thresholds.low_warn ?? 4.9;
+        const lc = thresholds.low_crit ?? 3.0;
+
+        let level = 'normal';
+        if (isNumber) {
+            if (v > hc || v < lc) level = 'crit';
+            else if (v > hw || v < lw) level = 'warn';
+        }
+
+        const normalBg = colors.normal_bg;
+        const normalText = colors.normal_text;
+        const warnBg = colors.warn_bg;
+        const warnText = colors.warn_text ?? '#ffb300';
+        const critBg = colors.crit_bg ?? '#b71c1c';
+        const critText = colors.crit_text ?? '#ffffff';
+
+        let bg;
+        let text;
+        if (level === 'crit') {
+            bg = critBg;
+            text = critText;
+        } else if (level === 'warn') {
+            bg = warnBg; // default to undefined → falls back to theme background
+            text = warnText;
+        } else {
+            bg = normalBg; // undefined → theme default
+            text = normalText; // undefined → theme default
+        }
+
+        if (bg !== undefined && bg !== null && bg !== '') {
+            this.style.setProperty('--sugartv-background', bg);
+        } else {
+            this.style.removeProperty('--sugartv-background');
+        }
+        if (text !== undefined && text !== null && text !== '') {
+            this.style.setProperty('--sugartv-text-color', text);
+            this.style.setProperty('--sugartv-value-color', text);
+            this.style.setProperty('--sugartv-icon-color', 'currentColor');
+            this.style.setProperty('--sugartv-prediction-color', 'currentColor');
+        } else {
+            this.style.removeProperty('--sugartv-text-color');
+            this.style.removeProperty('--sugartv-value-color');
+            this.style.removeProperty('--sugartv-icon-color');
+            this.style.removeProperty('--sugartv-prediction-color');
+        }
     }
 }
 
