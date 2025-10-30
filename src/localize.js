@@ -1,7 +1,7 @@
 const languages = {
     en: {
         card: {
-            name: 'SugarTV Card',
+            name: 'Moes Sugar Card',
             description:
                 'A custom lovelace card for Home Assistant that provides a better way to display Dexcom data.',
         },

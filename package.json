@@ -1,7 +1,7 @@
 {
     "name": "homeassistant-sugartv-card",
     "version": "1.0.0",
-    "description": "SugarTV Card for Home Assistant",
+    "description": "moes card thingy",
     "type": "module",
     "main": "dist/sugartv-card.js",
     "scripts": {
@@ -13,7 +13,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/vkuznetsov/homeassistant-sugartv-card.git"
+        "url": "git+https://github.com/MoeSaidi/homeassistant-sugartv-card.git"
     },
     "keywords": [
         "home-assistant",
